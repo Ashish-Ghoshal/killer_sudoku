@@ -28,7 +28,8 @@ def board_html(state: BoardState, highlight: Optional[Set[tuple]] = None, show_c
     colors = _cage_colors(state)
     first_cell = {cg.cage_id: min(cg.cells) for cg in state.cages}
     sums = {cg.cage_id: cg.target_sum for cg in state.cages}
-    rows = ['<table style="border-collapse:collapse;font-family:sans-serif;margin:auto">']
+    rows = ['<table style="border-collapse:collapse;table-layout:fixed;width:522px;'
+            'font-family:sans-serif;margin:auto">']
     for r in range(9):
         rows.append("<tr>")
         for c in range(9):
@@ -44,7 +45,8 @@ def board_html(state: BoardState, highlight: Optional[Set[tuple]] = None, show_c
                 return "1px solid #d0d0d0"
 
             bg = "#ffe066" if cell in highlight else PALETTE[colors[cid]]
-            style = (f"width:58px;height:58px;position:relative;text-align:center;background:{bg};;color:#111;"
+            style = (f"width:58px;height:58px;padding:0;box-sizing:border-box;position:relative;"
+                     f"text-align:center;vertical-align:middle;background:{bg};color:#111;"
                      f"border-top:{side(r - 1, c)};border-bottom:{side(r + 1, c)};"
                      f"border-left:{side(r, c - 1)};border-right:{side(r, c + 1)};")
             label = f'<span style="position:absolute;top:1px;left:3px;font-size:10px;color:#c0392b">{sums[cid]}</span>' \
@@ -53,8 +55,7 @@ def board_html(state: BoardState, highlight: Optional[Set[tuple]] = None, show_c
             if v is not None:
                 body = f'<span style="font-size:26px;font-weight:600">{v}</span>'
             elif show_candidates:
-                body = ('<div style="font-size:9px;color:#555;line-height:10px;padding-top:12px">'
-                        + _cand_grid(state.cands(cell)) + '</div>')
+                body = _cand_grid(state.cands(cell))
             else:
                 body = ""
             rows.append(f'<td style="{style}">{label}{body}</td>')
@@ -64,6 +65,12 @@ def board_html(state: BoardState, highlight: Optional[Set[tuple]] = None, show_c
 
 
 def _cand_grid(cands: Set[int]) -> str:
-    cells = "".join(f'<span style="display:inline-block;width:12px">{d if d in cands else "&nbsp;"}</span>'
-                    + ("<br>" if d % 3 == 0 else "") for d in range(1, 10))
-    return cells
+    """Pencil marks in a fixed 3x3 layout (1 top-left ... 9 bottom-right), pinned inside the cell."""
+    rows = ""
+    for r in range(3):
+        cells = "".join(
+            f'<span style="display:inline-block;width:33%;text-align:center">{d if d in cands else "&nbsp;"}</span>'
+            for d in range(r * 3 + 1, r * 3 + 4))
+        rows += f'<div style="height:15px;white-space:nowrap">{cells}</div>'
+    return ('<div style="position:absolute;top:11px;left:4px;right:4px;bottom:2px;'
+            'font-size:10px;line-height:15px;color:#444">' + rows + "</div>")
