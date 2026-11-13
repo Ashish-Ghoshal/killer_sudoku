@@ -1,0 +1,2 @@
+streamlit>=1.30
+# Optional, later phases: pulp, duckdb, pandas, scipy, opencv-python
